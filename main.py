@@ -3,7 +3,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from exceptions import StoryException
 from fastapi import FastAPI, Request, Response
-from router import blog_get, blog_post, user, article, product, file
+from router import blog_get, blog_post, user, article, product, file, dependencies
 from auth import authentication
 from templates import templates
 from db import models
@@ -19,6 +19,7 @@ from fastapi.websockets import WebSocket
 
 
 app = FastAPI()
+app.include_router(dependencies.router)
 app.include_router(templates.router)
 app.include_router(authentication.router)
 app.include_router(file.router)
