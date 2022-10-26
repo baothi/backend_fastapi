@@ -1,0 +1,25 @@
+.history
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/fast_api_2022/node_modules
+/fast_api_2022/.pnp
+/fast_api_2022/.pnp.js
+
+# testing
+/fast_api_2022/coverage
+
+# production
+/fast_api_2022/build
+
+# misc
+/fast_api_2022/.DS_Store
+/fast_api_2022/.env.local
+/fast_api_2022/.env.development.local
+/fast_api_2022/.env.test.local
+/fast_api_2022/.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
