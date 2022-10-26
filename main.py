@@ -1,17 +1,25 @@
+from http.client import HTTPResponse
 from fastapi.exceptions import HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, HTMLResponse
 from exceptions import StoryException
 from fastapi import FastAPI, Request, Response
 from router import blog_get, blog_post, user, article, product, file
 from auth import authentication
+from templates import templates
 from db import models
 # from sqlalchemy.engine.base import Engine
 from db.database import engine
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+import time
+from client import html
+from fastapi.websockets import WebSocket
+
+
 
 app = FastAPI()
+app.include_router(templates.router)
 app.include_router(authentication.router)
 app.include_router(file.router)
 app.include_router(user.router)
@@ -32,11 +40,34 @@ def story_exception_handler(request: Request, exc: StoryException):
     content={'detail': exc.name}
   )
 
+@app.get("/")
+async def get():
+  return HTMLResponse(html)
+
+clients = []
+
+@app.websocket("/chat")
+async def websocket_endpoint(websocket: WebSocket):
+  await websocket.accept()
+  clients.append(websocket)
+  while True:
+    data = await websocket.receive_text()
+    for client in clients:
+      await client.send_text(data)
+
 # @app.exception_handler(HTTPException)
 # def custom_handler(request: Request, exc: StoryException):
 #   return PlainTextResponse(str(exc),status_code=400)
 
 models.Base.metadata.create_all(engine)
+
+@app.middleware("http")
+async def app_middleware(request: Request, call_next):
+  start_time = time.time()
+  response = await call_next(request)
+  durations = time.time() - start_time
+  response.headers['duration'] = str(durations)
+  return response
 
 origins = [
   'http://localhost:3000'
@@ -51,3 +82,7 @@ app.add_middleware(
 )
 
 app.mount('/files', StaticFiles(directory="files"), name='files')
+app.mount('/templates/static', 
+        StaticFiles(directory="templates/static"),
+                    name='static'
+)
